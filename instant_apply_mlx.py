@@ -10,7 +10,7 @@ import time
 import mlx_lm
 import mlx.core as mx
 import mlx.nn as nn
-from mlx_lm.models.base import KVCache
+from mlx_lm.models.cache import KVCache
 
 
 def main() -> None:
@@ -20,8 +20,8 @@ def main() -> None:
     _ = parser.add_argument(
         "model", type=str, help="Example: mlx-community/Meta-Llama-3.1-8B-8bit"
     )
-    _ = parser.add_argument("target", type=str, help="Example: sample_target.py")
-    _ = parser.add_argument("edit", type=str, help="Example: sample_edit.py")
+    _ = parser.add_argument("--target", type=str, help="Example: sample_target.py")
+    _ = parser.add_argument("--edit", type=str, help="Example: sample_edit.py")
     _ = parser.add_argument("--speculation-lookahead", type=int, default=64)
     _ = parser.add_argument("--max-tokens", type=int, default=4096)
     args = parser.parse_args()
@@ -110,17 +110,22 @@ def main() -> None:
     print(f"Generation: {n_tokens / gen_time} tokens-per-second")
 
 
+# def create_cache(model: nn.Module) -> list[KVCache]:
+#     if hasattr(model, "make_cache"):
+#         return model.make_cache()
+#     else:
+#         kv_heads = (
+#             [model.n_kv_heads] * len(model.layers)
+#             if isinstance(model.n_kv_heads, int)
+#             else model.n_kv_heads
+#         )
+#         return [KVCache(model.head_dim, n) for n in kv_heads]
+
 def create_cache(model: nn.Module) -> list[KVCache]:
     if hasattr(model, "make_cache"):
         return model.make_cache()
-    else:
-        kv_heads = (
-            [model.n_kv_heads] * len(model.layers)
-            if isinstance(model.n_kv_heads, int)
-            else model.n_kv_heads
-        )
-        return [KVCache(model.head_dim, n) for n in kv_heads]
-
+    cache = [KVCache() for _ in range(len(model.layers))]
+    return cache
 
 def drop_from_cache(cache: KVCache, n: int):
     if n >= cache.offset:
