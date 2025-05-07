@@ -12,6 +12,7 @@ Only MLX (Apple devices) supported for now.
 ```sh
 pip install -r requirements.txt  # preferably in a venv
 python instant_apply_mlx.py
+python instant_apply_mlx.py --target sample_target.txt --edit sample_edit.txt mlx-community/Meta-Llama-3.1-8B-8bit
 ```
 
 ### With `uv`
